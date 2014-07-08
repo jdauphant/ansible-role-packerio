@@ -2,3 +2,4 @@
 packerio_package_list:
   - tar
   - unzip
+  - git

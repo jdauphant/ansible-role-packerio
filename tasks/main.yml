@@ -29,8 +29,6 @@
   tags: packerio
   local_action: file
     state=directory
-    owner=0
-    group=0
     mode=0755
     dest={{ ansible_data_path }}
 
@@ -39,8 +37,6 @@
   local_action: get_url
     url={{ packerio_mirror }}/{{ packerio_filename }}
     dest={{ ansible_data_path }}/{{ packerio_filename }}
-    owner=0
-    group=0
     mode=0644
     sha256sum={{ packerio_sha256sum }}
 
@@ -75,3 +71,24 @@
     force=true
     src={{ item }}
     dest={{ packerio_bin_path }}/{{ item|basename }}
+
+- name: Ensure images directory 
+  tags: packerio
+  file:
+    state=directory
+    mode=0755
+    dest={{ item.path }}
+  with_items:
+    - path
+
+- name: Retreive packer templates from git
+  tags: packerio
+  git: repo={{item.git}} dest={{item.path}} update=yes
+  with_items: packerio_build_images
+
+- name: Build images
+  tags: packerio
+  command: packer build {{item.template|default('template.json')}}
+     chdir={{ansible_data_path}}/{{item.repo_name}}
+     creates={{ansible_data_path}}/{{item.repo_name}}/{{item.output_dir}}
+  with_items: packerio_build_images
