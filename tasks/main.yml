@@ -27,14 +27,14 @@
 #   Download packer to the local source directory
 - name: Ensure download directory (local)
   tags: packerio
-  local_action: file
+  file:
     state=directory
     mode=0755
     dest={{ ansible_data_path }}
 
 - name: Download packer.io distribution (local)
   tags: packerio
-  local_action: get_url
+  get_url:
     url={{ packerio_mirror }}/{{ packerio_filename }}
     dest={{ ansible_data_path }}/{{ packerio_filename }}
     mode=0644
@@ -46,14 +46,13 @@
   tags: packerio
   file:
     state=directory
-    owner=0
-    group=0
     mode=0755
     dest={{ packerio_install_dir }}/{{ packerio_version }}
 
 - name: Install packer
   tags: packerio
   unarchive:
+    copy=no
     src={{ ansible_data_path }}/{{ packerio_filename }}
     dest={{ packerio_install_dir }}/{{ packerio_version }}
 
@@ -78,8 +77,7 @@
     state=directory
     mode=0755
     dest={{ item.path }}
-  with_items:
-    - path
+  with_items: packerio_build_images
 
 - name: Retreive packer templates from git
   tags: packerio
@@ -89,6 +87,7 @@
 - name: Build images
   tags: packerio
   command: packer build {{item.template|default('template.json')}}
-     chdir={{ansible_data_path}}/{{item.repo_name}}
-     creates={{ansible_data_path}}/{{item.repo_name}}/{{item.output_dir}}
+     chdir={{item.path}}
+     creates={{item.path}}/{{item.output_dir}}
   with_items: packerio_build_images
+
