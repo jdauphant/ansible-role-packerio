@@ -4,3 +4,4 @@ packerio_version: '0.6.0'
 packerio_bin_path: '/usr/local/bin'
 packerio_build_path: '/'
 packerio_build_images: []
+packerio_force_build: false

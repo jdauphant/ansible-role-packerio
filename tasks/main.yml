@@ -83,11 +83,11 @@
   tags: packerio
   git: repo={{item.git}} dest={{item.path}} update=yes
   with_items: packerio_build_images
+  register: packerio_images_to_build
 
 - name: Build images
   tags: packerio
-  command: packer build {{item.template|default('template.json')}}
-     chdir={{item.path}}
-     creates={{item.path}}/{{item.output_dir}}
-  with_items: packerio_build_images
-
+  command: packer build -force {{item.item.template|default('template.json')}}
+     chdir={{item.item.path}}
+  with_items: packerio_images_to_build.results
+  when: item|changed or packerio_force_build
