@@ -90,4 +90,4 @@
   command: packer build -force {{item.item.template|default('template.json')}}
      chdir={{item.item.path}}
   with_items: packerio_images_to_build.results
-  when: packerio_images_to_build is defined and ( item|changed or packerio_force_build )
+  when: not (packerio_images_to_build|skipped) and ( item|changed or packerio_force_build )
