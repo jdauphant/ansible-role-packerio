@@ -20,7 +20,7 @@
 
 - name: Install unarchive module dependencies
   tags: packerio
-  with_items: packerio_package_list
+  with_items: "{{packerio_package_list}}"
   action: "{{ ansible_pkg_mgr }} state=present name={{ item }}"
 
 
@@ -64,7 +64,7 @@
 - name: Linking binaries into system PATH
   tags: packerio
   when: packerio_bin_path != packerio_install_dir
-  with_items: packerio_installed_binaries.stdout_lines
+  with_items: "{{packerio_installed_binaries.stdout_lines}}"
   file:
     state=link
     force=true
@@ -77,17 +77,17 @@
     state=directory
     mode=0755
     dest={{ item.path }}
-  with_items: packerio_build_images
+  with_items: "{{packerio_build_images}}"
 
 - name: Retreive packer templates from git
   tags: packerio
   git: repo={{item.git}} dest={{item.path}} update=yes
-  with_items: packerio_build_images
+  with_items: "{{packerio_build_images}}"
   register: packerio_images_to_build
 
 - name: Build images
   tags: packerio
   command: packer build -force {{item.item.template|default('template.json')}}
      chdir={{item.item.path}}
-  with_items: packerio_images_to_build.results
+  with_items: "{{packerio_images_to_build.results}}"
   when: not (packerio_images_to_build|skipped) and ( item|changed or packerio_force_build )
